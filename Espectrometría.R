@@ -79,27 +79,23 @@ for (i in 1:5) {
 
 rm(i, mean_rad)
 
+# Se unen ambos nuevos ordenes
+mercwav2 = 2*mercury_wavelenghts
+ap_wave = append(mercury_wavelenghts, mercwav2)
+ap_sin = append(sin(mean_angle_first_order), sin(mean_angle_second_order))
+
 # Gráfica de los datos promedio
 plot(sin(mean_angle_second_order), 2*mercury_wavelenghts, col = 2, ylim = c(0, 1200), xlim = c(0, 0.5))
 points(sin(mean_angle_first_order), mercury_wavelenghts, col = 1)
 abline(lm(mercury_wavelenghts ~ sin(mean_angle_first_order)), col = 1)
-abline(lm(2*mercury_wavelenghts ~ sin(mean_angle_second_order)), col = 1)
-
-
-# Obtención de d a partir de la regresión lineal
-mercwav2 = 2*mercury_wavelenghts
-model_1 = lm(sin(mean_angle_first_order) ~ mercury_wavelenghts)
-model_2 = lm(sin(mean_angle_second_order) ~ mercwav2)
-rm(mercwav2)
+abline(lm(2*mercury_wavelenghts ~ sin(mean_angle_second_order)), col = 2)
+abline(lm(ap_wave ~ ap_sin), col = 3, lwd = 3)
 
 # Impresion de los valores de d
-print(paste("Valor de d para orden 1: ", model_1$coefficients[[2]]))
-print(paste("Valor de d para orden 2: ", model_2$coefficients[[2]]))
-print(paste("Promedio valor de d: ", mean(c(model_1$coefficients[[2]], model_2$coefficients[[2]]))))
+d = lm(ap_wave ~ ap_sin)$coefficients[[2]]
+print(paste("Valor para d: ", d))
 
 
-
-d = mean(c(model_1$coefficients[[2]], model_2$coefficients[[2]]))
 
 
 
@@ -108,5 +104,13 @@ d = mean(c(model_1$coefficients[[2]], model_2$coefficients[[2]]))
 # |   TRABAJO CON HIDROGENO   |
 # |---------------------------|
 # Se empieza eliminando componentes basura que ya no se han de utilizar
-rm(mercury, model_1, model_2, mean_angle_first_order, mean_angle_second_order, mercury_wavelenghts)
+rm(mercury, mean_angle_first_order, mean_angle_second_order, mercury_wavelenghts, ap_sin, ap_wave, mercwav2)
 
+
+
+# Datos aún sin organizar
+sin(grad_to_rad(unlist(hidrogen[3,]$ang), unlist(hidrogen[3,]$min))) * d
+hidrogen
+hidrogen[3,]$min
+
+grad_to_rad(unlist(hidrogen[3,]$ang), unlist(hidrogen[3,]$min))
