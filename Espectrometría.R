@@ -85,11 +85,22 @@ ap_wave = append(mercury_wavelenghts, mercwav2)
 ap_sin = append(sin(mean_angle_first_order), sin(mean_angle_second_order))
 
 # Gráfica de los datos promedio
-plot(sin(mean_angle_second_order), 2*mercury_wavelenghts, col = 2, ylim = c(0, 1200), xlim = c(0, 0.5))
-points(sin(mean_angle_first_order), mercury_wavelenghts, col = 1)
+par(mar=c(5,6,4,1)+.1)
+plot(sin(mean_angle_second_order), 2*mercury_wavelenghts, col = 2, ylim = c(0, 1200), xlim = c(0, 0.5),
+     xlab = "sin(theta)",
+     ylab = "m lambda [nm]",
+     cex = 2,
+     cex.lab = 2.5,
+     cex.axis = 2.5,
+     pch = 2,
+     lwd = 2)
+points(sin(mean_angle_first_order), mercury_wavelenghts, col = 1, cex = 2, lwd = 2)
 abline(lm(mercury_wavelenghts ~ sin(mean_angle_first_order)), col = 1)
 abline(lm(2*mercury_wavelenghts ~ sin(mean_angle_second_order)), col = 2)
 abline(lm(ap_wave ~ ap_sin), col = 3, lwd = 3)
+
+legend("bottomright", legend=c("reg. promedio m = abs(1)", "reg. promedio m = abs(2)", "reg. ambos órdenes"),
+       col=c(1:3), cex = 2.5, lwd = 2)
 
 # Impresion de los valores de d
 d = lm(ap_wave ~ ap_sin)$coefficients[[2]]
