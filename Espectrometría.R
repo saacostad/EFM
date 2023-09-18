@@ -118,10 +118,67 @@ print(paste("Valor para d: ", d))
 rm(mercury, mean_angle_first_order, mean_angle_second_order, mercury_wavelenghts, ap_sin, ap_wave, mercwav2)
 
 
+# Se obtienen las diferentes longitudes de onda para el hidrógeno
+# Obtención de los datos promedio para cada orden
+mean_angle_first_order = c()
 
-# Datos aún sin organizar
-sin(grad_to_rad(unlist(hidrogen[3,]$ang), unlist(hidrogen[3,]$min))) * d
-hidrogen
-hidrogen[3,]$min
+for (i in 1:3) {
+  mean_rad = mean(c(
+    grad_to_rad(unlist(hidrogen[hidrogen$ord == -1, c(1, 2)][[1]])[i], unlist(hidrogen[hidrogen$ord == -1, c(1, 2)][[2]])[i]),
+    grad_to_rad(unlist(hidrogen[hidrogen$ord == 1, c(1, 2)][[1]])[i], unlist(hidrogen[hidrogen$ord == 1, c(1, 2)][[2]])[i])
+  ))
+  
+  mean_angle_first_order <- append(mean_angle_first_order, mean_rad)
+}
 
-grad_to_rad(unlist(hidrogen[3,]$ang), unlist(hidrogen[3,]$min))
+
+mean_angle_second_order = c()
+
+for (i in 1:3) {
+  mean_rad = mean(c(
+    grad_to_rad(unlist(hidrogen[hidrogen$ord == -2, c(1, 2)][[1]])[i], unlist(hidrogen[hidrogen$ord == -2, c(1, 2)][[2]])[i]),
+    grad_to_rad(unlist(hidrogen[hidrogen$ord == 2, c(1, 2)][[1]])[i], unlist(hidrogen[hidrogen$ord == 2, c(1, 2)][[2]])[i])
+  ))
+  
+  mean_angle_second_order <- append(mean_angle_second_order, mean_rad)
+}
+
+rm(i, mean_rad)
+
+# Dado que se tienen dos valores (ordenes 1 y 2 promedio) para cada longitud de onda esperada, la longitud de onda será el promedio
+# de lambda = d/m sin(theta) para ambos valores obtenidos
+h_wavelenghts = c()
+for (i in 3:1) {
+  h_wavelenghts <- append(h_wavelenghts, mean(c( d*sin(mean_angle_first_order[i]), d/2 * sin(mean_angle_second_order[i])  )))
+}
+
+# Esperamos observar las 3 primeras
+# líneas del espectro de Balmer
+ns = c(1/9, 1/16, 1/25)                           # 1/n^2 de las líneas respectivas
+inv_wavelengths = 1/(h_wavelenghts * 10^(-9))     # 1/lambda (ajustando las respectivas unidades)
+
+# Se hace la respectiva gráfica
+par(mar=c(5,6,4,1)+.1)
+plot(ns, inv_wavelengths, col = 1,
+     xlab = "1/n^2",
+     ylab = "1/lambda [1/m]",
+     cex = 2,
+     cex.lab = 2.5,
+     cex.axis = 2.5,
+     lwd = 2)
+abline(lm(inv_wavelengths ~ ns), lwd = 2)
+
+# Se imprime el resultado 
+model = lm(inv_wavelengths ~ ns)
+Rh = -model$coefficients[[2]]
+
+print(paste("Estimación para la R_H: ", Rh))
+print(paste("Valor real R_H:", 10973731))
+print(paste("Error relativo R_h:", 1 - Rh/(1.0973731 * 10^7)))
+
+
+# Se imprimen otros resultados
+print("Longitudes de onda estimadas: ")
+print(paste("Valor estimado: ", h_wavelenghts[1], "  Valor real: 656.3  Color: Rojo"))
+print(paste("Valor estimado: ", h_wavelenghts[2], "  Valor real: 486.1  Color: Azul-verde"))
+print(paste("Valor estimado: ", h_wavelenghts[3], "  Valor real: 434.1  Color: Violeta"))
