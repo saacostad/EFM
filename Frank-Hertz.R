@@ -29,16 +29,15 @@ rm(high_temp_P, low_temp_P)
 # es el punto medio de la selección). Si este punto medio en la selección tiene el valor en I más alto, entonces es un pico, por lo tanto, 
 # se guarda. Se almacena este valor I para las siguientes iteraciones y se ignoran los siguientes puntos con el mismo valor de I.
 # Se devuelven todas las filas con los picos hallados.
-findMaxValues <- function(data)
+findMaxValues <- function(data, th)
 {
-  x = 1
-  treshold = 15
+  treshold = th
   last_data = strtoi(row.names(tail(data[[1]], 1)))
   
   max_D = list()
   last_max_value = 0
 
-  for (x in 1:(last_data - 2*treshold))
+  for (x in 20:(last_data - 2*treshold))
   {
     if (max(data[[1]][x:(x + 2*treshold), 2]) == data[[1]][x + treshold, 2] && data[[1]][x + treshold, 2] != last_max_value)
     {
@@ -52,11 +51,13 @@ findMaxValues <- function(data)
 
 
 # Bloque para corroborar los picos que se buscan
+# Para valores de alta temperatura, conviene usar un treshold = 15
+# Para valores de baja temperatura, conviene usar un treshold = 5
 for (i in 1:15)
 {
-  max_D = findMaxValues(high_temp_D[i])
+  max_D = findMaxValues(low_temp_D[i], 5)
   
-  plot(high_temp_D[[i]])
+  plot(low_temp_D[[i]])
   for (maxval in max_D)
   {
     print(maxval[[1]])
