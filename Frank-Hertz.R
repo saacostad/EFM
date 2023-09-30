@@ -15,9 +15,54 @@ low_temp_P = list.files()[c(2*(0:14) + 1)]              # seleccionar cada toma 
 # evaluación es un DataFrame, y así, la lista entera Lapply es la lista con los DataFrames de los datos de cada path.
 # lapply("Lista de paths", function("path individual") "función de carga de datos")
 
-high_temp_D = lapply(high_temp_P, function(path) list(read.table(high_temp_P[1], header = TRUE, sep = "\t", dec = ",", skip = 1)))
-low_temp_D = lapply(low_temp_P, function(path) list(read.table(high_temp_P[1], header = TRUE, sep = "\t", dec = ",", skip = 1)))
+high_temp_D = lapply(high_temp_P, function(path) read.table(path, header = TRUE, sep = "\t", dec = ",", skip = 1))
+low_temp_D = lapply(low_temp_P, function(path) read.table(path, header = TRUE, sep = "\t", dec = ",", skip = 1))
 
+rm(high_temp_P, low_temp_P)
+
+
+# |---------------------------------|
+# | FUNCIÓN PARA HALLAR LOS MÁXIMOS |
+# |---------------------------------|
+
+# Se recorren todos los datos en data, seleccionando una lista desde el punto x hasta el punto x + 2*treshold (así, el punto x + treshold
+# es el punto medio de la selección). Si este punto medio en la selección tiene el valor en I más alto, entonces es un pico, por lo tanto, 
+# se guarda. Se almacena este valor I para las siguientes iteraciones y se ignoran los siguientes puntos con el mismo valor de I.
+# Se devuelven todas las filas con los picos hallados.
+findMaxValues <- function(data)
+{
+  x = 1
+  treshold = 15
+  last_data = strtoi(row.names(tail(data[[1]], 1)))
+  
+  max_D = list()
+  last_max_value = 0
+
+  for (x in 1:(last_data - 2*treshold))
+  {
+    if (max(data[[1]][x:(x + 2*treshold), 2]) == data[[1]][x + treshold, 2] && data[[1]][x + treshold, 2] != last_max_value)
+    {
+      max_D <- append(max_D, list(data[[1]][x + treshold, ]))
+      last_max_value = data[[1]][x + treshold, 2]
+    }
+  }
+  
+  return(max_D)
+}
+
+
+# Bloque para corroborar los picos que se buscan
+for (i in 1:15)
+{
+  max_D = findMaxValues(high_temp_D[i])
+  
+  plot(high_temp_D[[i]])
+  for (maxval in max_D)
+  {
+    print(maxval[[1]])
+    abline(v = maxval[[1]])
+  }
+}
 
 
 
