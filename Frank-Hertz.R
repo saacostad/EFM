@@ -161,5 +161,112 @@ peak_difference_estimator = meanExpData(peaks_difference, peaks_difference_error
 # |-------------------|
 # | ENTREGA DE DATOS  |
 # |-------------------|
+
+# Impresión de los resultados principales
 print(paste("Promedio para el valor del primer pico de voltaje: ", first_peak_estimator[1], " \\pm ", first_peak_estimator[2]))
 print(paste("Diferencia promedio entre picos en temperatura alta: ", peak_difference_estimator[1], " \\pm ", peak_difference_estimator[2]))
+
+
+
+# |---------------------|
+# | Ploteo de gráficas  |
+# |---------------------|
+# Gráfica de todos los datos recolectados para bajas temperaturas
+par(mar=c(5,6,4,1)+.1)
+plot(low_temp_D[[1]],
+     xlab = "U_a [V]",
+     ylab = "I [ua]",
+     cex = 0.5,
+     cex.lab = 2,
+     cex.axis = 2,
+     lwd = 2)
+for (i in 2:15) {
+  points(low_temp_D[[i]],
+         cex = 0.5, 
+         col = i,
+         pch = i,
+         lwd = 2)
+}
+
+# Gráfica de dato máximo baja temperatura
+par(mar=c(5,6,4,1)+.1)
+plot(low_temp_D[[5]],
+     xlab = "U_a [V]",
+     ylab = "I [ua]",
+     cex = 1.5,
+     cex.lab = 2,
+     cex.axis = 2,
+     lwd = 2)
+points(low_temp_D[[5]][ (strtoi(row.names(low_temp_maxValues[[5]][[1]])) - 5) : (strtoi(row.names(low_temp_maxValues[[5]][[1]]))+5), ],
+       cex = 1.5, lwd = 2, col = 2)
+points(low_temp_D[[5]][ (strtoi(row.names(low_temp_maxValues[[5]][[2]])) - 5) : (strtoi(row.names(low_temp_maxValues[[5]][[2]]))+5), ],
+       cex = 1.5, lwd = 2, col = 2)
+abline(v = c(low_temp_maxValues[[5]][[1]][[1]], low_temp_maxValues[[5]][[2]][[1]]), lwd = 2)
+
+
+
+# Gráfica de todos los datos recolectados para altas temperaturas
+par(mar=c(5,6,4,1)+.1)
+plot(high_temp_D[[1]],
+     xlab = "U_a [V]",
+     ylab = "I [ua]",
+     cex = 0.5,
+     cex.lab = 2,
+     cex.axis = 2,
+     ylim = c(0, 3))
+for (i in 2:15) {
+  points(high_temp_D[[i]],
+         cex = 0.5, 
+         col = i,
+         pch = i)
+}
+
+# Gráfica de dato máximo alta temperatura
+par(mar=c(5,6,4,1)+.1)
+plot(high_temp_D[[5]],
+     xlab = "U_a [V]",
+     ylab = "I [ua]",
+     cex.lab = 2,
+     cex.axis = 2,
+     lwd = 2)
+points(high_temp_D[[5]][ (strtoi(row.names(high_temp_maxValues[[5]][[1]])) - 15) : (strtoi(row.names(high_temp_maxValues[[5]][[1]]))+15), ],
+       cex = 1.5, lwd = 2, col = 2)
+points(high_temp_D[[5]][ (strtoi(row.names(high_temp_maxValues[[5]][[2]])) - 15) : (strtoi(row.names(high_temp_maxValues[[5]][[2]]))+15), ],
+       cex = 1.5, lwd = 2, col = 2)
+points(high_temp_D[[5]][ (strtoi(row.names(high_temp_maxValues[[5]][[3]])) - 15) : (strtoi(row.names(high_temp_maxValues[[5]][[3]]))+15), ],
+       cex = 1.5, lwd = 2, col = 2)
+points(high_temp_D[[5]][ (strtoi(row.names(high_temp_maxValues[[5]][[4]])) - 15) : (strtoi(row.names(high_temp_maxValues[[5]][[4]]))+15), ],
+       cex = 1.5, lwd = 2, col = 2)
+abline(v = c(high_temp_maxValues[[5]][[1]][[1]], high_temp_maxValues[[5]][[2]][[1]], high_temp_maxValues[[5]][[3]][[1]], high_temp_maxValues[[5]][[4]][[1]]), lwd = 2)
+
+rm(i)
+
+
+# |---------|
+# | TABLAS  |
+# |---------|
+# Tabla para los datos encontrados del primer pico
+print("")
+print("TABLA DE DATOS PARA EL PRIMER PICO")
+print("")
+print("Medida & U_a [V] \\")
+
+for (i in 1:15) {
+  print(paste(i, " & ", signif(first_peak[i], 3), " \\pm ", signif(first_peak_errors[i], 2), " \\"))
+}
+
+# Tabla de datos para la diferencia entre picos
+print("")
+print("TABLA DE DATOS PARA DIFERENCIAS ENTRE PICOS")
+print("")
+
+print("Medida & p4 - p3 & p3 - p2 & p2 - p1 \\")
+for (i in 0:14) {
+  print(paste(i, " & ", 
+              signif(peaks_difference[i*3 + 1], 3), " \\pm ", signif(peaks_difference_error[i*3 + 1], 2), " & ",
+              signif(peaks_difference[i*3 + 2], 3), " \\pm ", signif(peaks_difference_error[i*3 + 2], 2), " & ",
+              signif(peaks_difference[i*3 + 3], 3), " \\pm ", signif(peaks_difference_error[i*3 + 3], 2),
+              " \\"))
+}
+
+rm(i)
