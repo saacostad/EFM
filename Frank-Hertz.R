@@ -52,21 +52,6 @@ findMaxValues <- function(data, th)
   return(max_D)
 }
 
-# Bloque para corroborar los picos que se buscan
-# Para valores de alta temperatura, conviene usar un treshold = 15
-# Para valores de baja temperatura, conviene usar un treshold = 5
-# for (i in 1:15)
-# {
-#   max_D = findMaxValues(low_temp_D[i], 5)
-# 
-#   plot(low_temp_D[[i]])
-#   for (maxval in max_D)
-#   {
-#     abline(v = maxval[[1]])
-#   }
-# }
-# rm(maxval)
-
 
 
 # |-------------------------------------------------|
@@ -83,12 +68,26 @@ findError <- function(peak, data)
 }
 
 
-# |-----------------------------------------------------|
-# | FUNCIÓN PARA PROPAGAR LA INCERTIDUMBRE EN PRODUCTOS |
-# |-----------------------------------------------------|
+
+# |---------------------------------------|
+# | FUNCIONES PARA PROPAGAR INCERTIDUMBRE |
+# |---------------------------------------|
 propProdErrors <- function(res, rval, eval){return(abs(res * sqrt(sum((eval/ rval)^2))))}
 propSumErrors <- function(eval){return(sqrt(sum(eval^2)))}
 propEscErrors <- function(c, eval){return(abs(c)*eval)}
+
+# Función para hallar el mejor estimador del promedio de una serie de estimaciones experimentales. 
+# Promedio ponderado con pesos la incertidumbre de la medición
+meanExpData <- function(rval, eval)
+{
+  meanval = sum(rval / (eval^2)) / sum(1 / eval^2)
+  errval = 1 / sqrt(sum(1 / eval^2))
+  
+  return(c(meanval, errval))
+}
+
+
+
 
 
 
@@ -100,33 +99,31 @@ high_temp_maxValues = lapply(high_temp_D, function(data) findMaxValues(list(data
 
 
 
+
+
+
 # |------------------------|
 # | HALLAR EL PRIMER PICO  |
 # |------------------------|
-first_peak_D = unlist(lapply(low_temp_maxValues, function(data) data[[1]][[1]]))
+# Se encuentran los valores del primero pico para los datos tomados a temperaturas bajas
+first_peak = unlist(lapply(low_temp_maxValues, function(data) data[[1]][[1]]))
 
 # |------------------------------------------|
 # | Encontrar incertidumbre del primero pico |
 # |------------------------------------------|
 # Incertidumbre para el primer pico. Primero, se combinan todas las incertidumbres encontradas para los
-# primeros picos en una sola lista. Luego, se encuentra el error de esa suma y finalmente el error del 
-# factor de escala dado por el cociente del promedio.
-
-f_peak_errors = c()
+# primeros picos en una sola lista.
+first_peak_errors = c()
 for (i in 1:15) {
   error = findError(low_temp_maxValues[[i]][[1]], low_temp_D[[i]])
-  f_peak_errors <- append(f_peak_errors, error)
+  first_peak_errors <- append(first_peak_errors, error)
 }
+rm(i, error)
 
-sum_error = propSumErrors(f_peak_errors)      # Se encuentra el error de la suma, que se trata como
-                                              # como el error de la variable X en el escalamiento
+first_peak_estimator = meanExpData(first_peak, first_peak_errors)
 
-mean_error = propEscErrors((1/15), sum_error)
 
-rm(f_peak_errors, i, error, sum_error)
 
-print(paste("Promedio para el valor del primer pico de voltaje: ", mean(first_peak_D)))
-print(paste("Desviación para el valor del primer pico de voltaje: ", sd(first_peak_D)))
 
 
 # |-------------------------------------------------------------|
@@ -141,7 +138,7 @@ peaks_difference_error = c()
 counter = 1
 for (measure in high_temp_maxValues) {
   for (peak in 4:2){
-    peaks_difference <- append(peaks_difference, measure[[peak]][1] - measure[[peak - 1]][1])
+    peaks_difference <- append(peaks_difference, measure[[peak]][[1]] - measure[[peak - 1]][[1]])
     
     error_1 = findError(measure[[peak]], high_temp_D[[counter]])
     error_2 = findError(measure[[peak - 1]], high_temp_D[[counter]])
@@ -151,18 +148,18 @@ for (measure in high_temp_maxValues) {
   
   counter = counter + 1
 }
-peaks_difference = unlist(peaks_difference)
+rm(counter, error_1, error_2, measure, peak)
 
 # Se halla finalmente el error del promedio
-mean_error = propEscErrors((1/15), propSumErrors(peaks_difference_error))
-
-rm(measure, peak, error_1, error_2, peaks_difference_error, counter)
-
-# print(paste("Diferencia promedio entre picos en temperatura alta: ", mean(peaks_difference)))
-# print(paste("Desv. Est de la diferencia entre picos en temperatura alta: ", sd(peaks_difference)))
+peak_difference_estimator = meanExpData(peaks_difference, peaks_difference_error)
 
 
 
 
 
 
+# |-------------------|
+# | ENTREGA DE DATOS  |
+# |-------------------|
+print(paste("Promedio para el valor del primer pico de voltaje: ", first_peak_estimator[1], " \\pm ", first_peak_estimator[2]))
+print(paste("Diferencia promedio entre picos en temperatura alta: ", peak_difference_estimator[1], " \\pm ", peak_difference_estimator[2]))
