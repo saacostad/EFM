@@ -17,8 +17,11 @@ low_temp_P = list.files()[c(2*(0:14) + 1)]              # seleccionar cada toma 
 
 high_temp_D = lapply(high_temp_P, function(path) read.table(path, header = TRUE, sep = "\t", dec = ",", skip = 1))
 low_temp_D = lapply(low_temp_P, function(path) read.table(path, header = TRUE, sep = "\t", dec = ",", skip = 1))
-
 rm(high_temp_P, low_temp_P)
+
+
+
+
 
 
 # |---------------------------------|
@@ -49,51 +52,115 @@ findMaxValues <- function(data, th)
   return(max_D)
 }
 
-
 # Bloque para corroborar los picos que se buscan
 # Para valores de alta temperatura, conviene usar un treshold = 15
 # Para valores de baja temperatura, conviene usar un treshold = 5
 # for (i in 1:15)
 # {
 #   max_D = findMaxValues(low_temp_D[i], 5)
-#   
+# 
 #   plot(low_temp_D[[i]])
 #   for (maxval in max_D)
 #   {
-#     print(maxval[[1]])
 #     abline(v = maxval[[1]])
 #   }
 # }
+# rm(maxval)
 
 
-# Se crean las listas con los valores máximos encontrados
+
+# |-------------------------------------------------|
+# | FUNCIÓN PARA HALLAR LA INCERTIDUMBRE EN UN PICO |
+# |-------------------------------------------------|
+# La incertidumbre se halla promediando la diferencia en V entre los datos contiguos al punto pico.
+findError <- function(peak, data)
+{
+  peak_row = strtoi(rownames(peak))
+  prev_V = data[peak_row - 1, ][[1]]
+  pos_V = data[peak_row + 1, ][[1]]
+  
+  return(mean(c(abs(peak[[1]] - prev_V), abs(peak[[1]] - pos_V))))
+}
+
+
+# |-----------------------------------------------------|
+# | FUNCIÓN PARA PROPAGAR LA INCERTIDUMBRE EN PRODUCTOS |
+# |-----------------------------------------------------|
+propProdErrors <- function(res, rval, eval){return(abs(res * sqrt(sum((eval/ rval)^2))))}
+propSumErrors <- function(eval){return(sqrt(sum(eval^2)))}
+propEscErrors <- function(c, eval){return(abs(c)*eval)}
+
+
+
+# |-----------------------------------------|
+# | SE ENCUENTRAN LOS VALORES DE LOS PICOS  |
+# |-----------------------------------------|
 low_temp_maxValues = lapply(low_temp_D, function(data) findMaxValues(list(data), 5))
 high_temp_maxValues = lapply(high_temp_D, function(data) findMaxValues(list(data), 15))
+
+
 
 # |------------------------|
 # | HALLAR EL PRIMER PICO  |
 # |------------------------|
-
 first_peak_D = unlist(lapply(low_temp_maxValues, function(data) data[[1]][[1]]))
+
+# |------------------------------------------|
+# | Encontrar incertidumbre del primero pico |
+# |------------------------------------------|
+# Incertidumbre para el primer pico. Primero, se combinan todas las incertidumbres encontradas para los
+# primeros picos en una sola lista. Luego, se encuentra el error de esa suma y finalmente el error del 
+# factor de escala dado por el cociente del promedio.
+
+f_peak_errors = c()
+for (i in 1:15) {
+  error = findError(low_temp_maxValues[[i]][[1]], low_temp_D[[i]])
+  f_peak_errors <- append(f_peak_errors, error)
+}
+
+sum_error = propSumErrors(f_peak_errors)      # Se encuentra el error de la suma, que se trata como
+                                              # como el error de la variable X en el escalamiento
+
+mean_error = propEscErrors((1/15), sum_error)
+
+rm(f_peak_errors, i, error, sum_error)
 
 print(paste("Promedio para el valor del primer pico de voltaje: ", mean(first_peak_D)))
 print(paste("Desviación para el valor del primer pico de voltaje: ", sd(first_peak_D)))
 
 
-
 # |-------------------------------------------------------------|
 # | FUNCIÓN PARA HALLAR EL ESPACIAMIENTO ENTRE PICOS DE VOLTAJE |
 # |-------------------------------------------------------------|
+# Se toman todos los datos de los picos para cada toma de datos y se almacenan las diferencias entre picos
+# en una lista. Igualmente, la incertidumbre se halla propagando la incertimbre de la resta de los picos y
+# hallando la incertidumbre de su promedio.
+
 peaks_difference = c()
+peaks_difference_error = c()
+counter = 1
 for (measure in high_temp_maxValues) {
   for (peak in 4:2){
     peaks_difference <- append(peaks_difference, measure[[peak]][1] - measure[[peak - 1]][1])
+    
+    error_1 = findError(measure[[peak]], high_temp_D[[counter]])
+    error_2 = findError(measure[[peak - 1]], high_temp_D[[counter]])
+    
+    peaks_difference_error <- append(peaks_difference_error, propSumErrors(c(error_1, error_2)))
   }
+  
+  counter = counter + 1
 }
 peaks_difference = unlist(peaks_difference)
 
-print(paste("Diferencia promedio entre picos en temperatura alta: ", mean(peaks_difference)))
-print(paste("Desv. Est de la diferencia entre picos en temperatura alta: ", sd(peaks_difference)))
+# Se halla finalmente el error del promedio
+mean_error = propEscErrors((1/15), propSumErrors(peaks_difference_error))
+
+rm(measure, peak, error_1, error_2, peaks_difference_error, counter)
+
+# print(paste("Diferencia promedio entre picos en temperatura alta: ", mean(peaks_difference)))
+# print(paste("Desv. Est de la diferencia entre picos en temperatura alta: ", sd(peaks_difference)))
+
 
 
 
