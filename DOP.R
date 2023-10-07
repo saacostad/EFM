@@ -4,10 +4,16 @@
 # Como los datos conseguidos son, en sí, imágenes, el procesamiento de estas fue hecho con
 # hecho con ayuda de tracker, de donde se consiguen los siguientes datos.
 
-voltage = c(2600, )
+voltage = c(2600, 3000, 3400, 3800, 4200, 4600, 5000, 
+            2600, 3000, 3400, 3800, 4200, 4600, 5000)
 
-firstRingPos = c(0.0165, )
-firstRingThickness = c(0.004626, )
+fRing_iRing = c(2.837E-2, 2.691E-2, 2.470E-2, 2.366E-2, 2.283E-2, 2.248E-2, 2.241E-2, 
+                2.860E-2, 2.702E-2, 2.549E-2, 2.376E-2, 2.241E-2, 2.209E-2, 2.178E-2)
+fRing_oRing = c(3.762E-2, 3.546E-2, 3.271E-2, 3.032E-2, 2.877E-2, 2.859E-2, 2.860E-2, 
+                3.582E-2, 3.524E-2, 3.330E-2, 3.080E-2, 2.881E-2, 2.787E-2, 2.767E-2)
 
-secondRingPos = c(0.02779, )
-secondRingThickness = c(0.00574, )
+sRing_iRing = c(4.984E-2, 4.906E-2, 4.419E-2, 4.193E-2, 4.009E-2, 3.974E-2, 3.842E-2, 
+                5.036E-2, 4.732E-2, 4.451E-2, 4.146E-2, 4.025E-2, 3.828E-2, 3.910E-2)
+sRing_oRing = c(6.132E-2, 5.828E-2, 5.244E-2, 5.069E-2, 4.684E-2, 4.565E-2, 4.541E-2, 
+                5.949E-2, 5.551E-2, 5.237E-2, 4.956E-2, 4.606E-2, 4.564E-2, 4.522E-2)
+
