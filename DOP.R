@@ -38,8 +38,8 @@ eL = 0.2E-2
 # CONSTANTES UNIVERSALES  
 # -----------------------------------------------------------------
 
-h = 4.135667696E-15   # Constante de Plank en eV
-e = 1                 # Carga del electrón en eV
+h = 6.626070E-34      # Constante de Plank en eV
+e = 1.6022E-19        # Carga del electrón en eV
 m = 9.109383706E-31   # Masa del electrón
 
 
@@ -79,11 +79,11 @@ rm(voltage, fiRing, foRing, siRing, soRing)
 
 
 
-# |-------------------|
-# | ANÁLISIS DE DATOS |
-# |-------------------|
-# Ya con los datos experimentales, se analizan para obtener los intervalos necesarios
-# para el experimento, es decir, los lambda experimentales y teóricos.
+# |-----------------------------------|
+# | FUNCIONES PARA ANALIZAR LOS DATOS |
+# |-----------------------------------|
+# Funciones que se encargan de hallar los valores (junto con sus errores, que serán
+# tomados como los intervalos) de lambda teórico y lambda experimental
 
 
 # OBTENCIÓN DE LOS LAMBDA TEÓRICOS  
@@ -95,19 +95,25 @@ theoLambda <- function(U, dU)
 {
   k = h / sqrt(2 * m * e)
   
+  # Cálculo del valor teórico
   lambda = k / sqrt(U)
   
   # Cálculo del error teórico
-  error = (k / 2) * u^(-3 / 2) * 100
+  error = (k / 2) * U^(-3 / 2) * dU
   
   return(c(lambda, error))
 }
 
 
 
-# OBTENCIÓN DE LOS LAMBDA TEÓRICOS  
-expLambda <- function(d, iD, oD, L)
+# OBTENCIÓN DE LOS LAMBDA EXPERIMENTAL
+# -------------------------------------------------------------------------
+# Dada la condición de Bragg para la difracción en una red cristalina y sus
+# resultados, se puede estimar el lambda experimental haciendo uso de este
+
+expLambda <- function(d, ed, iD, oD, L, eL)
 {
+  # Cálculo del error experimental
   D = mean(c(iD, oD))
   dD = (oD - iD) / 2
   
@@ -119,9 +125,44 @@ expLambda <- function(d, iD, oD, L)
   
   dLambda = dq / 2
   
+  # Cálculo del valor experimental
+  lambda = d * (D / (2 * L))
+  
   return(c(lambda, dLambda))
 }
 
+
+
+# |-------------------|
+# | ANÁLISIS DE DATOS |
+# |-------------------|
+# En esta sección se analizan los datos. Por cada valor de datos tomados, se halla el lambda teórico
+# dado el potencial acelerador e igualmente se halla el lambda experimental con los datos del diámetro
+# de los anillos y se comparan los resultados.
+
+theoIntervals = list()
+expIntervals = list()
+boolColapse = c()
+for (i in 1:14) {
+  mData = expData[i,] 
+  
+  theoValue = theoLambda(mData$voltage, voltageError)
+  
+  fexpInterval = expLambda(fd, ed, mData$fiRing, mData$foRing, L, eL)
+  sexpInterval = expLambda(sd, ed, mData$siRing, mData$soRing, L, eL)
+  expValue = meanExpData(c(fexpInterval[1], sexpInterval[1]), c(fexpInterval[2], sexpInterval[2]))
+  
+  
+  theoInterval = c(theoValue[1] - theoValue[2], theoValue[1] + theoValue[2])
+  expInterval = c(expValue[1] - expValue[2], expValue[1] + expValue[2])
+  
+  theoIntervals = append(theoIntervals, list(theoInterval))
+  expIntervals = append(expIntervals, list(expInterval))
+  
+  boolColapse = append(boolColapse, (abs(theoValue[1] - expValue[1]) < (theoValue[2] + expValue[2])))
+}
+
+rm(i, mData, e, h, m, ed, L, eL, fd, sd, expInterval, fexpInterval, sexpInterval, theoInterval)
 
 
 
