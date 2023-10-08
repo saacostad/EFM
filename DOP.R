@@ -142,7 +142,10 @@ expLambda <- function(d, ed, iD, oD, L, eL)
 
 theoIntervals = list()
 expIntervals = list()
+theoPoints = list()
+expPoints = list()
 boolColapse = c()
+
 for (i in 1:14) {
   mData = expData[i,] 
   
@@ -159,11 +162,33 @@ for (i in 1:14) {
   theoIntervals = append(theoIntervals, list(theoInterval))
   expIntervals = append(expIntervals, list(expInterval))
   
+  theoPoints = append(theoPoints, theoValue[1])
+  expPoints = append(expPoints, expValue[1])
+  
   boolColapse = append(boolColapse, (abs(theoValue[1] - expValue[1]) < (theoValue[2] + expValue[2])))
 }
 
-rm(i, mData, e, h, m, ed, L, eL, fd, sd, expInterval, fexpInterval, sexpInterval, theoInterval)
+rm(i, mData, e, h, m, ed, L, eL, fd, sd, expInterval, fexpInterval, sexpInterval, theoInterval, theoValue, expValue)
 
 
 
+# |-----------------------|
+# | GRÁFICA DE LOS DATOS  |
+# |-----------------------|
+# Se hace una gáfica de bigotes de los datos encontrados
 
+plot(append(expData$voltage, expData$voltage), append(theoPoints, expPoints), 
+     col = c(append(rep(1, times = 14), append(rep(2, times = 7), rep(3, times = 7)))),
+     pch = 3,
+     lwd = 3,
+     ylim = c(1.5E-11, 3E-11))
+arrows(x0=expData$voltage, y0=unlist(theoIntervals)[((1:7)*2)-1], x1=expData$voltage, y1=unlist(theoIntervals)[((1:7)*2)], 
+       angle = 90, code=3, col=1, lwd=2, length = 0.1)
+arrows(x0=expData$voltage, y0=unlist(expIntervals)[((1:7)*2)-1], x1=expData$voltage, y1=unlist(expIntervals)[((1:7)*2)], 
+       angle = 90, code=3, col=2, lwd=2, length = 0.1)
+arrows(x0=expData$voltage, y0=unlist(expIntervals)[((8:14)*2)-1], x1=expData$voltage, y1=unlist(expIntervals)[((8:14)*2)], 
+       angle = 90, code=3, col=3, lwd=2, length = 0.1)
+
+
+rep(1, times = 14)
+  
