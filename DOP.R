@@ -14,7 +14,7 @@ meanExpData <- function(rval, eval)
   
   return(c(meanval, errval))
 } 
-  
+
 
 
 # |-----------------------|
@@ -56,17 +56,17 @@ voltage = c(2600, 3000, 3400, 3800, 4200, 4600, 5000,
 
 
 # Datos obtenidos de los diámetros de los anillos internos
-fiRing = c(2.837E-2, 2.691E-2, 2.470E-2, 2.366E-2, 2.283E-2, 2.248E-2, 2.241E-2, 
-                2.860E-2, 2.702E-2, 2.549E-2, 2.376E-2, 2.241E-2, 2.209E-2, 2.178E-2)
-foRing = c(3.762E-2, 3.546E-2, 3.271E-2, 3.032E-2, 2.877E-2, 2.859E-2, 2.860E-2, 
-                3.582E-2, 3.524E-2, 3.330E-2, 3.080E-2, 2.881E-2, 2.787E-2, 2.767E-2)
+fiRing = c(2.837E-2, 2.691E-2, 2.470E-2, 2.366E-2, 2.283E-2, 2.248E-2, 2.280E-2, 
+           2.860E-2, 2.702E-2, 2.549E-2, 2.376E-2, 2.241E-2, 2.209E-2, 1.974E-2)
+foRing = c(3.762E-2, 3.546E-2, 3.271E-2, 3.032E-2, 2.877E-2, 2.859E-2, 2.672E-2, 
+           3.582E-2, 3.524E-2, 3.330E-2, 3.080E-2, 2.881E-2, 2.787E-2, 2.970E-2)
 
 
 # Datos obtenidos de los diámetros de los anillos externos
-siRing = c(4.984E-2, 4.906E-2, 4.419E-2, 4.193E-2, 4.009E-2, 3.974E-2, 3.842E-2, 
-                5.036E-2, 4.732E-2, 4.451E-2, 4.146E-2, 4.025E-2, 3.828E-2, 3.910E-2)
-soRing = c(6.132E-2, 5.828E-2, 5.244E-2, 5.069E-2, 4.684E-2, 4.565E-2, 4.541E-2, 
-                5.949E-2, 5.551E-2, 5.237E-2, 4.956E-2, 4.606E-2, 4.564E-2, 4.522E-2)
+siRing = c(4.984E-2, 4.906E-2, 4.419E-2, 4.193E-2, 4.009E-2, 3.974E-2, 3.955E-2, 
+           5.036E-2, 4.732E-2, 4.451E-2, 4.146E-2, 4.025E-2, 3.828E-2, 3.758E-2)
+soRing = c(6.132E-2, 5.828E-2, 5.244E-2, 5.069E-2, 4.684E-2, 4.565E-2, 4.439E-2, 
+           5.949E-2, 5.551E-2, 5.237E-2, 4.956E-2, 4.606E-2, 4.564E-2, 4.768E-2)
 
 
 
@@ -115,7 +115,7 @@ expLambda <- function(d, ed, iD, oD, L, eL)
 {
   # Cálculo del error experimental
   D = mean(c(iD, oD))
-  dD = (oD - iD) / 2
+  dD = (oD - iD) / 2 + 0.1E-2
   
   p = d * D
   dp = p * sqrt((dD / D)^2 + (ed / d)^2)
@@ -127,6 +127,7 @@ expLambda <- function(d, ed, iD, oD, L, eL)
   
   # Cálculo del valor experimental
   lambda = d * (D / (2 * L))
+  # lambda = 2 * d * sin(0.5 * atan(D / (2 * L)))
   
   return(c(lambda, dLambda))
 }
@@ -146,24 +147,41 @@ theoPoints = list()
 expPoints = list()
 boolColapse = c()
 
-for (i in 1:14) {
+for (i in 1:7) {
   mData = expData[i,] 
+  nData = expData[i + 7,]
   
   theoValue = theoLambda(mData$voltage, voltageError)
-  
-  fexpInterval = expLambda(fd, ed, mData$fiRing, mData$foRing, L, eL)
-  sexpInterval = expLambda(sd, ed, mData$siRing, mData$soRing, L, eL)
-  expValue = meanExpData(c(fexpInterval[1], sexpInterval[1]), c(fexpInterval[2], sexpInterval[2]))
-  
-  
   theoInterval = c(theoValue[1] - theoValue[2], theoValue[1] + theoValue[2])
-  expInterval = c(expValue[1] - expValue[2], expValue[1] + expValue[2])
   
   theoIntervals = append(theoIntervals, list(theoInterval))
+  theoPoints = append(theoPoints, theoValue[1])
+  theoIntervals = append(theoIntervals, list(theoInterval))
+  theoPoints = append(theoPoints, theoValue[1])
+  
+  # Se añaden 2 valores para el mismo voltage en teoPoints y teoIntervals
+  
+  
+  fexpInterval = expLambda(fd, ed, mData$fiRing, mData$foRing, L, eL)
+  sexpInterval = expLambda(fd, ed, nData$fiRing, nData$foRing, L, eL)
+  expValue = meanExpData(c(fexpInterval[1], sexpInterval[1]), c(fexpInterval[2], sexpInterval[2]))
+  
+  expInterval = c(expValue[1] - expValue[2], expValue[1] + expValue[2])
+  
+  expIntervals = append(expIntervals, list(expInterval))
+  expPoints = append(expPoints, expValue[1])
+  
+  boolColapse = append(boolColapse, (abs(theoValue[1] - expValue[1]) < (theoValue[2] + expValue[2])))
+  
+  fexpInterval = expLambda(sd, ed, mData$siRing, mData$soRing, L, eL)
+  sexpInterval = expLambda(sd, ed, nData$siRing, nData$soRing, L, eL)
+  expValue = meanExpData(c(fexpInterval[1], sexpInterval[1]), c(fexpInterval[2], sexpInterval[2]))
+  
+  expInterval = c(expValue[1] - expValue[2], expValue[1] + expValue[2])
+  expPoints = append(expPoints, expValue[1])
+  
   expIntervals = append(expIntervals, list(expInterval))
   
-  theoPoints = append(theoPoints, theoValue[1])
-  expPoints = append(expPoints, expValue[1])
   
   boolColapse = append(boolColapse, (abs(theoValue[1] - expValue[1]) < (theoValue[2] + expValue[2])))
 }
@@ -177,18 +195,17 @@ rm(i, mData, e, h, m, ed, L, eL, fd, sd, expInterval, fexpInterval, sexpInterval
 # |-----------------------|
 # Se hace una gáfica de bigotes de los datos encontrados
 
-plot(append(expData$voltage, expData$voltage), append(theoPoints, expPoints), 
-     col = c(append(rep(1, times = 14), append(rep(2, times = 7), rep(3, times = 7)))),
+plot(append(sort(expData$voltage), sort(expData$voltage)), append(theoPoints, expPoints), 
+     col = c(append(rep(1, times = 14), rep(c(2, 3), times = 14))),
      pch = 3,
      lwd = 3,
      ylim = c(1.5E-11, 3E-11))
-arrows(x0=expData$voltage, y0=unlist(theoIntervals)[((1:7)*2)-1], x1=expData$voltage, y1=unlist(theoIntervals)[((1:7)*2)], 
+arrows(x0=expData$voltage[1:7], y0=unlist(theoIntervals)[((0:6)*4) + 1], x1=expData$voltage, y1=unlist(theoIntervals)[((0:6)*4) + 2], 
        angle = 90, code=3, col=1, lwd=2, length = 0.1)
-arrows(x0=expData$voltage, y0=unlist(expIntervals)[((1:7)*2)-1], x1=expData$voltage, y1=unlist(expIntervals)[((1:7)*2)], 
+arrows(x0=expData$voltage, y0=unlist(expIntervals)[((0:6)*4) + 1], x1=expData$voltage, y1=unlist(expIntervals)[((0:6)*4) + 2], 
        angle = 90, code=3, col=2, lwd=2, length = 0.1)
-arrows(x0=expData$voltage, y0=unlist(expIntervals)[((8:14)*2)-1], x1=expData$voltage, y1=unlist(expIntervals)[((8:14)*2)], 
+arrows(x0=expData$voltage, y0=unlist(expIntervals)[((0:6)*4) + 3], x1=expData$voltage, y1=unlist(expIntervals)[((0:6)*4) + 4], 
        angle = 90, code=3, col=3, lwd=2, length = 0.1)
 
+boolColapse
 
-rep(1, times = 14)
-  
