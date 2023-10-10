@@ -195,17 +195,39 @@ rm(i, mData, e, h, m, ed, L, eL, fd, sd, expInterval, fexpInterval, sexpInterval
 # |-----------------------|
 # Se hace una gáfica de bigotes de los datos encontrados
 
+par(mar=c(5,6,4,1)+.1)
 plot(append(sort(expData$voltage), sort(expData$voltage)), append(theoPoints, expPoints), 
      col = c(append(rep(1, times = 14), rep(c(2, 3), times = 14))),
      pch = 3,
      lwd = 3,
-     ylim = c(1.5E-11, 3E-11))
+     ylim = c(1.5E-11, 3E-11),
+     xlab = "U_A [V]",
+     ylab = "lambda [m]",
+     cex = 3,
+     cex.lab = 2.5,
+     cex.axis = 2.5,
+     )
 arrows(x0=expData$voltage[1:7], y0=unlist(theoIntervals)[((0:6)*4) + 1], x1=expData$voltage, y1=unlist(theoIntervals)[((0:6)*4) + 2], 
-       angle = 90, code=3, col=1, lwd=2, length = 0.1)
+       angle = 90, code=3, col=1, lwd=3, length = 0.1)
 arrows(x0=expData$voltage, y0=unlist(expIntervals)[((0:6)*4) + 1], x1=expData$voltage, y1=unlist(expIntervals)[((0:6)*4) + 2], 
-       angle = 90, code=3, col=2, lwd=2, length = 0.1)
+       angle = 90, code=3, col=2, lwd=3, length = 0.1)
 arrows(x0=expData$voltage, y0=unlist(expIntervals)[((0:6)*4) + 3], x1=expData$voltage, y1=unlist(expIntervals)[((0:6)*4) + 4], 
-       angle = 90, code=3, col=3, lwd=2, length = 0.1)
+       angle = 90, code=3, col=3, lwd=3, length = 0.1)
 
 boolColapse
+
+
+# |-------------------|
+# | REPORTE DE DATOS  |
+# |-------------------|
+
+for (i in 1:7)
+{
+  printDataF = formatC(unlist(expData[i, ]), format = "E", digits = 2)
+  printDataS = formatC(unlist(expData[i + 7, ]), format = "E", digits = 2)
+  print(paste(
+    expData[i, ]$voltage, " & ", printDataF[[2]], " & ", printDataF[[3]], " & ", printDataF[[4]], " & ", printDataF[[5]], 
+    " & ", printDataS[[2]], " & ", printDataS[[3]], " & ", printDataS[[4]], " & ", printDataS[[5]], " \\"
+  ))
+}
 
