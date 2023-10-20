@@ -63,6 +63,8 @@ Brsqrt = getSlope(Idata)[7:12]               # constantes de los parámetros par
 IDF = data.frame(Bvalues, Islopes)        # Se almacenan estos datos en Data Frames para ser analizados
 BDF = data.frame(Ivalues, Bslopes)        # con mayor facilidad
 
+
+
 # El primer resultado es obtener PS, el cual dada la pendiente de la regresión entre Islopes y Bvalues 
 # A*, está dado por la expresión 1/(e0 * d * A*)
 
@@ -71,6 +73,8 @@ ps = 1 / (e0 * d * coef(lm(Islopes ~ Bvalues, IDF))[2])
 print(paste("Valor hallado para ps: ", signif(ps, 3)))
 print(paste("Valor de guia para ps: ", 1.1E21))
 print(paste("Error relativo: ", signif(1 - (ps / 1.02E21), 3)))
+
+
 
 # El segundo resultado es la constante R_H, para ello, primero nos aseguramos que U_H es lineal tanto
 # para valores variables de I como de B. Para esto, nos basamos en el R^2 de las regresiones, buscando
@@ -95,7 +99,7 @@ RH_B = d * coef(lm(Bslopes ~ Ivalues, BDF))[2]
 
 RH_mean = (RH_I + RH_B)/2
 
-RH_real = 6.6E-3
+RH_real = 6.633E-3
 
 
 print("")
@@ -106,3 +110,17 @@ print(paste("Estimación R_H dado B variable: ", signif(RH_B, 3)))
 print(paste("Estimación R_H promedio de I B: ", signif(RH_mean, 3)))
 print(paste("Valor real (dada guía) de R_H: ", RH_real))
 print(paste("Error relativo RH promedio: ", signif(1 - RH_mean/RH_real, 3)))
+
+
+
+# Un tercer resultado son las diferentes velocidades de deriva vp, las cuales, dadas las pendientes con B variable, 
+# entregan una lista de vp para los diferentes valores de I constantes según la expresión vp(I) = A(I)*b
+
+vp = lapply(Bslopes, function(slope) slope / b)
+
+print("")
+print("")
+
+print("Lista de estimaciones de valores para v_p:")
+print(unlist(vp[1:6]))
+
