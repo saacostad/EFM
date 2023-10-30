@@ -220,6 +220,83 @@ legend("topleft", legend=c(
   unlist(lapply(c("Kb", "Ka"), function(val) paste("U = ", val, " [mA]")))),
   col=c(2:1), cex = 1.35, lwd = 2)
 
+
+# 6 - 7.7
+# 36 - 53
+
+
+# |----------------------|
+# |   QUINTO RESULTADO   |
+# | ALTURA DE LOS PICOS  |
+# |----------------------|
+
+
+findPeakHeight <- function(peak, i){
+    
+    data = UVarData[[i]]
+    
+    m = (data[[53, 2]] - data[[36, 2]]) / (data[[53, 1]] - data[[36, 1]])
+    b = (data[[36, 2]] * data[[53, 1]] - data[[36, 1]] * data[[53, 2]]) / (data[[53, 1]] - data[[36, 1]])
+    
+    return(peak[[2]] - (m * peak[[1]] + b))
+}
+
+
+findPeakHeight <- function(peak, i){
+  
+  data = UVarData[[i]]
+  
+  if (i == 2)
+  {
+    m = (data[[61, 2]] - data[[44, 2]]) / (data[[61, 1]] - data[[44, 1]])
+    b = (data[[44, 2]] * data[[61, 1]] - data[[44, 1]] * data[[61, 2]]) / (data[[61, 1]] - data[[44, 1]])
+  }
+  else
+  {
+    m = (data[[53, 2]] - data[[36, 2]]) / (data[[53, 1]] - data[[36, 1]])
+    b = (data[[36, 2]] * data[[53, 1]] - data[[36, 1]] * data[[53, 2]]) / (data[[53, 1]] - data[[36, 1]])
+  }
+  
+  return(peak[[2]] - (m * peak[[1]] + b))
+}
+
+difPeakKa = unlist(lapply(3:5, function(i) findPeakHeight(UVpeaks[[i]][[1]], i)))
+difPeakKb = unlist(lapply(3:5, function(i) findPeakHeight(UVpeaks[[i]][[2]], i)))
+
+difPeakKa = append(difPeakKa, findPeakHeight(UVpeaks[[2]][[1]], 2))
+
+par(mar=c(5,6,4,1)+.1)
+plot(c(25000, 30000, 32000, 20000), difPeakKa, 
+     ylim = c(0, 2400),
+     xlab = "U [V]",
+     ylab = "R - R_f [1/s]",
+     col = 1, 
+     cex = 1.5,
+     cex.lab = 2.5,
+     cex.axis = 2,
+     pch = 1,
+     lwd = 2)
+points(c(25000, 30000, 32000), difPeakKb,
+       cex = 1.5,
+       col = 2, 
+       pch = 2,
+       lwd = 2)
+abline(lm(difPeakKb ~ c(25000, 30000, 32000)), lwd = 2, col = 2)
+abline(lm(difPeakKa ~ c(25000, 30000, 32000, 20000)), lwd = 2, col = 1)
+legend("topleft", legend=c("ka", "Kb"),
+  col=c(2:1), cex = 1.35, lwd = 2)
+
+
+VlKb = lm(c(25000, 30000, 32000) ~ difPeakKb )[[1]][[1]]
+VlKa = lm(c(25000, 30000, 32000, 20000) ~ difPeakKa )[[1]][[1]]
+
+print(" ")
+print(" ")
+print(" ")
+print("DETERMINAR EMPÍRICAMENTE A QUÉ VOLTAJE APARECEN LAS LÍNEAS")
+print(paste("Voltaje límite para Ka: ", VlKa))
+print(paste("Voltaje límite para Kb: ", VlKb))
+
 # |-------------------|
 # | APARTADO GRÁFICO  |
 # |-------------------|
@@ -266,7 +343,7 @@ for (i in 5:2) {
   try(abline(v=b[[2]][[1]], col = i, lwd = i*1.25), silent = TRUE)
 }
 legend("topright", legend=c(
-  unlist(lapply(c(15, 20, 25, 30, 32), function(val) paste("U = ", val, " [mA]")))),
+  unlist(lapply(c(15, 20, 25, 30, 32), function(val) paste("U = ", val, " [kV]")))),
   col=c(5:1), cex = 1.35, lwd = 2)
 
 
