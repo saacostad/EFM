@@ -31,7 +31,7 @@ calibrationData = head(leadTempData[1:2], -1)
 leadIntegrationData = read.table("plomo_areas.txt", header = TRUE, sep = "\t", dec = ",", col.names = c("d", "I"))
 steelIntegrationData = read.table("acero_areas.txt", header = TRUE, sep = "\t", dec = ",", col.names = c("d", "I"))
 
-rm(dataSet, leadTempData, steelTempData)
+rm(leadTempData, steelTempData)
 
 
 
@@ -103,14 +103,51 @@ legend("topright", legend=c(
 # Graficas para el COEFICIENTE DE ATENUACION
 # __________________________________________
 
+
+leadSemilogData = data.frame(list(leadIntegrationData[[1]]/10, log(leadIntegrationData[[2]])))
+colnames(leadSemilogData) = c("d", "I")
+
 # Grafica para el PLOMO
 par(mar=c(5,6,4,1)+.1)
-plot(leadIntegrationData[[1]], log(leadIntegrationData[[2]]),
-     xlab = "d [mm]",
+plot(leadSemilogData,
+     ylim = c(8, 18),
+     xlab = "d [cm]",
      ylab = "~I [I]",
      cex.lab = 2.5,
      cex.axis = 2,
      pch = 19,
      lwd = 2)
+abline(lm(I ~ d, leadSemilogData), lwd = 2)
 
-lm(c(1, 2, 3), c(1, 2, 3))
+print(paste("Coeficiente de atenuacion PLOMO: ", -lm(d ~ I, leadSemilogData)[[1]][[2]], " pm ", 0.1209))
+
+
+
+steelSemilogData = data.frame(list(steelIntegrationData[[1]]/10, log(steelIntegrationData[[2]])))
+colnames(steelSemilogData) = c("d", "I")
+
+# Grafica para el ACERO
+par(mar=c(5,6,4,1)+.1)
+plot(steelSemilogData,
+     ylim = c(8, 18),
+     xlab = "d [cm]",
+     ylab = "~I [I]",
+     cex.lab = 2.5,
+     cex.axis = 2,
+     pch = 19,
+     lwd = 2)
+abline(lm(I ~ d, steelSemilogData), lwd = 2)
+
+print(paste("Coeficiente de atenuacion ACERO: ", -lm(d ~ I, steelSemilogData)[[1]][[2]], " pm ", 1.02))
+
+steelSemilogData
+steelIntegrationData
+
+plot(leadIntegrationData, log = "y")
+points(steelIntegrationData, log = "y", col = 2)
+
+lm(d/10 ~ log(I), steelIntegrationData)
+lm(d/10 ~ log(I), leadIntegrationData)
+
+lm(log(I) ~ {d/10}, steelIntegrationData)
+lm(log(I) ~ {d/10}, leadIntegrationData)
