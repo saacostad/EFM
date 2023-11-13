@@ -31,7 +31,7 @@ calibrationData = head(leadTempData[1:2], -1)
 leadIntegrationData = read.table("plomo_areas.txt", header = TRUE, sep = "\t", dec = ",", col.names = c("d", "I"))
 steelIntegrationData = read.table("acero_areas.txt", header = TRUE, sep = "\t", dec = ",", col.names = c("d", "I"))
 
-rm(leadTempData, steelTempData)
+rm(dataSet, leadTempData, steelTempData)
 
 
 
@@ -151,3 +151,5 @@ lm(d/10 ~ log(I), leadIntegrationData)
 
 lm(log(I) ~ {d/10}, steelIntegrationData)
 lm(log(I) ~ {d/10}, leadIntegrationData)
+
+
